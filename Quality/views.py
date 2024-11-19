@@ -3,16 +3,18 @@ from datetime import datetime, timezone
 from typing import re
 
 from celery import shared_task
+from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import QCalAgency, QGaugeType, QLocation, QCalStatus, QGaugeData, QGaugeDataTable, QMailerList
+from .models import QCalAgency, QGaugeType, QLocation, QCalStatus, QGaugeData, QGaugeDataTable, QMailerList, \
+    CalibrationReport
 from .serializers import QCalAgencySerializer, QGaugeTypeSerializer, QLocationSerializer, QCalStatusSerializer, \
     QGaugeDataSerializer, QMailerListSerializer
 from rest_framework.views import APIView
@@ -639,63 +641,31 @@ def add_cal_mail_entry(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#     ===============
+@csrf_exempt
+@api_view(['GET'])
+def get_calibration_report(request, gauge_id):
+    try:
+        # Retrieve the report based on gauge_id
+        report = CalibrationReport.objects.get(gauge_id=gauge_id)
+
+        # Construct the full file URLs for both certificates
+        calibration_cert_url = settings.MEDIA_URL + str(
+            report.calibration_certificate)  # Will give something like /media/Cal_Cert_Path/CAM-GWG-001/2024_06_08/calibration_certificate.pdf
+        traceability_cert_url = settings.MEDIA_URL + str(
+            report.traceability_certificate)  # Will give something like /media/Trace_Cert_Path/CAM-GWG-001/2024_06_08/traceability_certificate.pdf
+
+        logger.debug(f"Calibration Cert URL: {calibration_cert_url}")
+        logger.debug(f"Traceability Cert URL: {traceability_cert_url}")
+
+        return JsonResponse({
+            'calibration_cert_url': calibration_cert_url,
+            'traceability_cert_url': traceability_cert_url
+        })
+    except CalibrationReport.DoesNotExist:
+        return JsonResponse({'error': 'Calibration report not found'}, status=404)
 
 
-# @csrf_exempt
-# @api_view(['GET'])
-# def get_gaugeid_mail(request):
-#     if request.method == 'GET':
-#         mailer_list = QGaugeIdMail.objects.all().values()  # Ensure this is the correct model
-#         mailer_list_data = list(mailer_list)  # Convert QuerySet to a list of dictionaries
-#
-#         if mailer_list_data:  # Check if there is data
-#             header_names = mailer_list_data[0].keys()  # Get keys from the first record
-#         else:
-#             header_names = []  # Handle empty case
-#
-#         response_data = {
-#             'header_names': list(header_names),  # Convert to list
-#             'values': mailer_list_data
-#         }
-#
-#         return JsonResponse(response_data, safe=False)
-#
-# @csrf_exempt
-# @api_view(['DELETE'])
-# def delete_gaugeid_mail(request, entry_id):
-#     try:
-#         entry = QGaugeIdMail.objects.get(id=entry_id)
-#         entry.delete()
-#         return JsonResponse({'message': 'Entry deleted successfully!'}, status=204)
-#     except QMailerList.DoesNotExist:
-#         return JsonResponse({'error': 'Entry not found!'}, status=404)
-#
-# @csrf_exempt
-# @api_view(['PUT'])
-# def edit_gaugeid_mail(request, entry_id):
-#     try:
-#         entry = QGaugeIdMail.objects.get(id=entry_id)
-#     except QGaugeIdMail.DoesNotExist:
-#         return Response(status=status.HTTP_404_NOT_FOUND)
-#
-#     if request.method == 'PUT':
-#         serializer = QGaugeIdMailSerializer(entry, data=request.data, partial=True)
-#         if serializer.is_valid():
-#             serializer.save()  # Save the updated entry
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-# @csrf_exempt
-# @api_view(['POST'])
-# def add_gaugeid_mail(request):
-#     if request.method == 'POST':
-#         serializer = QGaugeIdMailSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()  # Save the new entry
-#             # print(serializer)
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 

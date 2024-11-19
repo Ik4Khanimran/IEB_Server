@@ -1,6 +1,11 @@
+from django.conf.urls.static import static
 from django.urls import path
 # from .views import add_cal_agency, get_cal_agencies
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
+
+
 urlpatterns = [
     path('add_cal_agency/', views.add_cal_agency, name='add_cal_agency'),
     path('get_cal_agencies/', views.get_cal_agencies, name='get_cal_agencies'),
@@ -39,9 +44,12 @@ urlpatterns = [
     path('edit_cal_mailer_list/<int:entry_id>/', views.edit_cal_mailer_list, name='edit_cal_mailer_list'),
     path('add_cal_mail_entry/', views.add_cal_mail_entry, name='add_cal_mail_entry'),
 
-    # path('get_gaugeid_mail/', views.get_gaugeid_mail, name='get_gaugeid_mail'),
-    # path('delete_gaugeid_mail/<int:entry_id>/', views.delete_gaugeid_mail, name='delete_gaugeid_mail'),
-    # path('edit_gaugeid_mail/<int:entry_id>/', views.edit_gaugeid_mail, name='edit_gaugeid_mail'),
-    # path('add_gaugeid_mail/', views.add_gaugeid_mail, name='add_gaugeid_mail'),
+    path('get_calibration_report/', views.get_calibration_report, name='get_calibration_report'),
+
 
 ]
+
+# Serve media files in development mode (only when DEBUG is True)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

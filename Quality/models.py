@@ -1,3 +1,5 @@
+import os
+
 from django.db import models
 
 class QCalAgency(models.Model):
@@ -123,23 +125,23 @@ class QMailerList(models.Model):
         return f"{self.name} - {self.mail_id}"
 
 
-# class QGaugeIdMail(models.Model):
-#
-#     id = models.AutoField(primary_key=True)
-#     gauge_id = models.CharField(max_length=255, null=True, blank=True)
-#     act1 = models.CharField(max_length=255, null=True, blank=True)
-#     act2 = models.CharField(max_length=255, null=True, blank=True)
-#     informer1 = models.CharField(max_length=255, null=True, blank=True)
-#     informer2 = models.CharField(max_length=255, null=True, blank=True)
-#     informer3 = models.CharField(max_length=255, null=True, blank=True)
-#     authenticator1 = models.CharField(max_length=255, null=True, blank=True)
-#     authenticator = models.CharField(max_length=255, null=True, blank=True)
-#
-#     def __str__(self):
-#         return self.gauge_id or f"ID {self.id}"
-#
-#     class Meta:
-#         db_table = 'Q_gauge_id_mail'  # Custom table name
-#         verbose_name = 'Q Gauge ID Mail'
-#         verbose_name_plural = 'Q Gauge ID Mails'
+def calibration_cert_path(instance, filename):
+    # Dynamic path generation for calibration certificates
+    return os.path.join('Cal_Cert_Path', instance.gauge_id, instance.calibration_date, filename)
+
+def traceability_cert_path(instance, filename):
+    # Dynamic path generation for traceability certificates
+    return os.path.join('Trace_Cert_Path', instance.gauge_id, instance.traceability_date, filename)
+
+class CalibrationReport(models.Model):
+    gauge_id = models.CharField(max_length=255)
+    calibration_date = models.DateField()
+    traceability_date = models.DateField()
+    # Calibration certificate
+    calibration_certificate = models.FileField(upload_to=calibration_cert_path)
+    # Traceability certificate
+    traceability_certificate = models.FileField(upload_to=traceability_cert_path)
+
+    def __str__(self):
+        return f"Calibration Report for {self.gauge_id}"
 

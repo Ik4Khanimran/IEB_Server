@@ -14,8 +14,12 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+# from django.conf import settings
+# from django.conf.urls.static import static
 
 
 urlpatterns = [
@@ -27,3 +31,8 @@ urlpatterns = [
     path('Operations/', include('Operations.urls')),  # Use 'Users' here instead of an empty string
     path('Quality/', include('Quality.urls')),
 ]
+
+# # Serve media files in development mode (only when DEBUG is True)
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

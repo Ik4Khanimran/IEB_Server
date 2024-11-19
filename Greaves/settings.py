@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+
+from django.template.context_processors import static
+
 # from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -273,8 +276,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CELERY_BROKER_URL = 'redis://localhost:6379/0'
 
 
-# This is the directory where uploaded files will be stored
-MEDIA_ROOT = os.path.join(BASE_DIR, 'Cal_Report')  # Adjust this if necessary
+# Define the URL path to access media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# This is the URL to access media files
-MEDIA_URL = '/media/'  # This is the URL prefix you’ll use to access files in the browser
+# Define the absolute file system path to the media directory
+# MEDIA_ROOT = 'D:/Server_Folders/Madhura_Github/IEB_Server/Greaves/Cal_Report'
+
+# # Paths for storing calibration and traceability certificates
+# CAL_CERT_PATH = os.path.join(MEDIA_ROOT, 'Cal_Cert_Path')
+# TRACE_CERT_PATH = os.path.join(MEDIA_ROOT, 'Trace_Cert_Path')
